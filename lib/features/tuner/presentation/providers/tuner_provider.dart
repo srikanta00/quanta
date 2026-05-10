@@ -162,7 +162,7 @@ class TunerNotifier extends Notifier<TunerState> {
   void reset() {
     final rng = Random();
     final updated = state.strings.map((s) {
-      final magnitude = 10.0 + rng.nextDouble() * 35.0; // 10–45 cents
+      final magnitude = rng.nextDouble() * 50.0; // 0–50 cents
       final sign = rng.nextBool() ? 1.0 : -1.0;
       final detunedString = s.copyWith(detuningCents: magnitude * sign);
       if (s.isSounding) {
