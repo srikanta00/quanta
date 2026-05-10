@@ -110,8 +110,6 @@ class _StringRowState extends ConsumerState<StringRow>
                       phaseAnimation: _phase,
                     ),
                   ),
-                  const SizedBox(width: AppSpacing.sm),
-                  _HzLabel(freq: string.currentFreq),
                   const SizedBox(width: AppSpacing.xs),
                   _SoundToggle(
                     isSounding: string.isSounding,
@@ -123,7 +121,10 @@ class _StringRowState extends ConsumerState<StringRow>
               ),
               if (checkResult != null) ...[
                 const SizedBox(height: AppSpacing.xs),
-                _AnimatedCheckResult(result: checkResult),
+                _AnimatedCheckResult(
+                  result: checkResult,
+                  freq: string.currentFreq,
+                ),
               ],
             ],
           ),
@@ -200,27 +201,6 @@ class _StringLine extends StatelessWidget {
   }
 }
 
-class _HzLabel extends StatelessWidget {
-  const _HzLabel({required this.freq});
-
-  final double freq;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 68,
-      child: Text(
-        '${freq.toStringAsFixed(1)} Hz',
-        textAlign: TextAlign.right,
-        style: AppTypography.mono(
-          fontSize: 11,
-          color: AppColors.onSurfaceMuted,
-        ),
-      ),
-    );
-  }
-}
-
 class _SoundToggle extends StatelessWidget {
   const _SoundToggle({required this.isSounding, required this.onToggle});
 
@@ -258,12 +238,39 @@ class _SoundToggle extends StatelessWidget {
 }
 
 class _AnimatedCheckResult extends StatelessWidget {
-  const _AnimatedCheckResult({required this.result});
+  const _AnimatedCheckResult({required this.result, required this.freq});
 
   final StringCheckResult result;
+  final double freq;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(height: 38, child: CentDeviationBar(result: result));
+    // Match the string row's column structure exactly so the bar is centered
+    // under the string line:
+    //   [36px blank] [8px gap] [Expanded] [4px gap] [36px blank]
+    return Row(
+      children: [
+        const SizedBox(width: 36), // aligns with string-name label
+        const SizedBox(width: AppSpacing.sm),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '${freq.toStringAsFixed(1)} Hz',
+                style: AppTypography.mono(
+                  fontSize: 10,
+                  color: AppColors.onSurfaceMuted,
+                ),
+              ),
+              const SizedBox(height: 2),
+              SizedBox(height: 38, child: CentDeviationBar(result: result)),
+            ],
+          ),
+        ),
+        const SizedBox(width: AppSpacing.xs),
+        const SizedBox(width: 36), // aligns with sound-toggle button
+      ],
+    );
   }
 }

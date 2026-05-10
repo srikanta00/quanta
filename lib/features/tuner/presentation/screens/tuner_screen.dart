@@ -129,8 +129,12 @@ class _KnobSection extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.lg),
           const Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [TuningKnob(isCoarse: true), TuningKnob(isCoarse: false)],
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: TuningKnob(isCoarse: true)),
+              SizedBox(width: AppSpacing.md),
+              Expanded(child: TuningKnob(isCoarse: false)),
+            ],
           ),
         ],
       ),
