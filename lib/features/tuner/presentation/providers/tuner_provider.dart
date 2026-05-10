@@ -114,7 +114,7 @@ class TunerNotifier extends Notifier<TunerState> {
   void adjustDetuning(double deltaCents) {
     final index = state.selectedStringIndex;
     final string = state.strings[index];
-    final newCents = clampD(string.detuningCents + deltaCents, -50.0, 50.0);
+    final newCents = clampD(string.detuningCents + deltaCents, -500.0, 500.0);
     final updated = string.copyWith(detuningCents: newCents);
 
     _audio.updateFrequency(index, updated.currentFreq);
@@ -162,7 +162,7 @@ class TunerNotifier extends Notifier<TunerState> {
   void reset() {
     final rng = Random();
     final updated = state.strings.map((s) {
-      final magnitude = rng.nextDouble() * 50.0; // 0–50 cents
+      final magnitude = rng.nextDouble() * 500.0; // 0–500 cents
       final sign = rng.nextBool() ? 1.0 : -1.0;
       final detunedString = s.copyWith(detuningCents: magnitude * sign);
       if (s.isSounding) {
