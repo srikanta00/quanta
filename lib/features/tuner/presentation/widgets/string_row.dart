@@ -37,6 +37,33 @@ class _StringRowState extends ConsumerState<StringRow>
     super.dispose();
   }
 
+  /// Triggers a short pluck sound + vibration animation on the string.
+  /// No-ops if the string is already sounding continuously.
+  void _pluck() {
+    ref.read(tunerNotifierProvider.notifier).pluckString(widget.index);
+    // Drive the vibration animation for the duration of the pluck decay.
+    final isSounding = ref
+        .read(tunerNotifierProvider)
+        .strings[widget.index]
+        .isSounding;
+    if (isSounding) return; // animation already running via listener
+    _vibCtrl.repeat();
+    Future.delayed(const Duration(milliseconds: 550), () {
+      if (!mounted) return;
+      final stillSounding = ref
+          .read(tunerNotifierProvider)
+          .strings[widget.index]
+          .isSounding;
+      if (!stillSounding) {
+        _vibCtrl.animateTo(
+          0,
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final string = ref.watch(
@@ -71,7 +98,7 @@ class _StringRowState extends ConsumerState<StringRow>
           ref.read(tunerNotifierProvider.notifier).selectString(widget.index),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 220),
-        margin: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+        margin: const EdgeInsets.symmetric(vertical: 4),
         decoration: BoxDecoration(
           color: isSelected ? AppColors.surface : AppColors.background,
           borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
@@ -94,7 +121,7 @@ class _StringRowState extends ConsumerState<StringRow>
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.md,
-            vertical: AppSpacing.sm,
+            vertical: AppSpacing.xs,
           ),
           child: Column(
             children: [
@@ -103,11 +130,14 @@ class _StringRowState extends ConsumerState<StringRow>
                   _StringLabel(string: string, isSelected: isSelected),
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(
-                    child: _StringLine(
-                      index: widget.index,
-                      string: string,
-                      isSelected: isSelected,
-                      phaseAnimation: _phase,
+                    child: Listener(
+                      onPointerDown: (_) => _pluck(),
+                      child: _StringLine(
+                        index: widget.index,
+                        string: string,
+                        isSelected: isSelected,
+                        phaseAnimation: _phase,
+                      ),
                     ),
                   ),
                   const SizedBox(width: AppSpacing.xs),
@@ -119,13 +149,23 @@ class _StringRowState extends ConsumerState<StringRow>
                   ),
                 ],
               ),
-              if (checkResult != null) ...[
-                const SizedBox(height: AppSpacing.xs),
-                _AnimatedCheckResult(
-                  result: checkResult,
-                  freq: string.currentFreq,
+              // Always reserve the check-result space so the layout below
+              // (tuning wheels) never shifts when check mode toggles.
+              // 28px = ~13px text line metrics + 3px gap + 12px bar.
+              const SizedBox(height: 2),
+              SizedBox(
+                height: 28,
+                child: AnimatedOpacity(
+                  opacity: checkResult != null ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 250),
+                  child: checkResult != null
+                      ? _AnimatedCheckResult(
+                          result: checkResult,
+                          freq: string.currentFreq,
+                        )
+                      : const SizedBox.shrink(),
                 ),
-              ],
+              ),
             ],
           ),
         ),
@@ -182,7 +222,7 @@ class _StringLine extends StatelessWidget {
         : AppColors.stringMuted;
 
     return SizedBox(
-      height: 28,
+      height: 22,
       child: AnimatedBuilder(
         animation: phaseAnimation,
         builder: (_, _) => CustomPaint(
@@ -194,7 +234,7 @@ class _StringLine extends StatelessWidget {
             color: color,
             thickness: thickness,
           ),
-          size: const Size(double.infinity, 28),
+          size: const Size(double.infinity, 22),
         ),
       ),
     );
@@ -255,16 +295,40 @@ class _AnimatedCheckResult extends StatelessWidget {
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                '${freq.toStringAsFixed(1)} Hz',
-                style: AppTypography.mono(
-                  fontSize: 10,
-                  color: AppColors.onSurfaceMuted,
-                ),
+              Row(
+                children: [
+                  Text(
+                    '${freq.toStringAsFixed(1)} Hz',
+                    style: AppTypography.mono(
+                      fontSize: 9,
+                      color: AppColors.onSurfaceMuted,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    result.nearestNote,
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w600,
+                      color: result.indicatorColor,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(width: 3),
+                  Text(
+                    result.centsLabel,
+                    style: TextStyle(
+                      fontSize: 9,
+                      color: result.indicatorColor,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 2),
-              SizedBox(height: 38, child: CentDeviationBar(result: result)),
+              const SizedBox(height: 3),
+              SizedBox(height: 12, child: CentDeviationBar(result: result)),
             ],
           ),
         ),

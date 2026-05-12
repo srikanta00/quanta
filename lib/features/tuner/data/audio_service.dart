@@ -24,6 +24,9 @@ class AudioService {
   final Map<int, _Slot> _slots = {};
   bool _initialized = false;
 
+  // Generation counters — incremented to cancel a pending pluck decay.
+  final Map<int, int> _pluckGen = {};
+
   // ── Lifecycle ──────────────────────────────────────────────────────────────
 
   Future<void> init() async {
@@ -69,6 +72,7 @@ class AudioService {
     if (!_initialized) return;
     final s = _slots[slot];
     if (s == null) return;
+    _pluckGen[slot] = (_pluckGen[slot] ?? 0) + 1; // cancel pending pluck decay
     SoLoud.instance.setWaveformFreq(s.source, frequency);
     SoLoud.instance.setVolume(s.handle, 0.5);
     SoLoud.instance.setPause(s.handle, false);
@@ -78,8 +82,48 @@ class AudioService {
     if (!_initialized) return;
     final s = _slots[slot];
     if (s == null) return;
+    _pluckGen[slot] = (_pluckGen[slot] ?? 0) + 1; // cancel pending pluck decay
     SoLoud.instance.setVolume(s.handle, 0.0);
     SoLoud.instance.setPause(s.handle, true);
+  }
+
+  /// Plays [frequency] on [slot] with an exponential volume decay that mimics
+  /// a plucked string. Safe to call while a pluck is already decaying — the
+  /// previous decay is cancelled via the generation counter.
+  void pluckTone(int slot, double frequency) {
+    if (!_initialized) return;
+    final s = _slots[slot];
+    if (s == null) return;
+
+    _pluckGen[slot] = (_pluckGen[slot] ?? 0) + 1;
+    final gen = _pluckGen[slot]!;
+
+    SoLoud.instance.setWaveformFreq(s.source, frequency);
+    SoLoud.instance.setVolume(s.handle, 0.7);
+    SoLoud.instance.setPause(s.handle, false);
+
+    // Exponential decay: (delay-ms, target-volume)
+    const curve = [
+      (110, 0.48),
+      (110, 0.28),
+      (120, 0.13),
+      (110, 0.05),
+      (100, 0.0),
+    ];
+    int elapsed = 0;
+    for (final (delay, vol) in curve) {
+      elapsed += delay;
+      Future.delayed(Duration(milliseconds: elapsed), () {
+        if ((_pluckGen[slot] ?? 0) != gen) return; // cancelled
+        if (!_initialized) return;
+        if (vol == 0.0) {
+          SoLoud.instance.setVolume(s.handle, 0.0);
+          SoLoud.instance.setPause(s.handle, true);
+        } else {
+          SoLoud.instance.setVolume(s.handle, vol);
+        }
+      });
+    }
   }
 
   void updateFrequency(int slot, double frequency) {

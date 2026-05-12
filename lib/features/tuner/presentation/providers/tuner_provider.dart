@@ -153,6 +153,12 @@ class TunerNotifier extends Notifier<TunerState> {
 
   // ── Check & Reset ─────────────────────────────────────────────────────────
 
+  void pluckString(int index) {
+    final string = state.strings[index];
+    if (string.isSounding) return; // already ringing continuously
+    _audio.pluckTone(index, string.currentFreq);
+  }
+
   void checkTuning() {
     state = state.copyWith(
       checkResults: TuningCalculator.checkAll(state.strings),

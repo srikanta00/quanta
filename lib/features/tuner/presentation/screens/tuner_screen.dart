@@ -22,34 +22,21 @@ class TunerScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: AppSpacing.sm),
               _AppHeader(),
-              const SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: AppSpacing.sm),
               // ── Reference note panel ──────────────────────────────────────
               const ReferenceNotePanel(),
-              const SizedBox(height: AppSpacing.lg),
-              // ── Section label ─────────────────────────────────────────────
-              Padding(
-                padding: const EdgeInsets.only(left: 2),
-                child: Text(
-                  'STRINGS',
-                  style: AppTypography.cinzel(
-                    fontSize: 10,
-                    color: AppColors.onSurfaceMuted,
-                    letterSpacing: 2,
-                  ),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.xs),
+              const SizedBox(height: AppSpacing.sm),
               // ── 4 string rows ─────────────────────────────────────────────
               const StringRow(index: 0),
               const StringRow(index: 1),
               const StringRow(index: 2),
               const StringRow(index: 3),
-              const SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: AppSpacing.sm),
               // ── Tuning knobs ──────────────────────────────────────────────
               _KnobSection(),
-              const SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: AppSpacing.sm),
               // ── Action buttons ────────────────────────────────────────────
               const Row(
                 children: [
@@ -58,7 +45,7 @@ class TunerScreen extends ConsumerWidget {
                   Expanded(child: ResetButton()),
                 ],
               ),
-              const SizedBox(height: AppSpacing.xl),
+              const SizedBox(height: AppSpacing.xs),
             ],
           ),
         ),
@@ -107,7 +94,7 @@ class _KnobSection extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.md,
-        vertical: AppSpacing.lg,
+        vertical: AppSpacing.sm,
       ),
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -127,7 +114,7 @@ class _KnobSection extends StatelessWidget {
               letterSpacing: 2,
             ),
           ),
-          const SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: AppSpacing.xs),
           const Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

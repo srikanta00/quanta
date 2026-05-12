@@ -60,40 +60,12 @@ class _CentDeviationBarState extends State<CentDeviationBar>
         // Needle position: 0.5 = center, 0.0 = −50¢, 1.0 = +50¢
         final t = (cents / 50.0).clamp(-1.0, 1.0) * 0.5 + 0.5;
 
-        return Column(
-          children: [
-            SizedBox(
-              height: 18,
-              child: CustomPaint(
-                painter: _BarPainter(needlePos: t, color: color),
-                size: const Size(double.infinity, 18),
-              ),
-            ),
-            const SizedBox(height: 2),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  widget.result.nearestNote,
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                    color: color,
-                    letterSpacing: 0.8,
-                  ),
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  widget.result.centsLabel,
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: color,
-                    fontFeatures: const [FontFeature.tabularFigures()],
-                  ),
-                ),
-              ],
-            ),
-          ],
+        return SizedBox(
+          height: 12,
+          child: CustomPaint(
+            painter: _BarPainter(needlePos: t, color: color),
+            size: const Size(double.infinity, 12),
+          ),
         );
       },
     );
