@@ -151,10 +151,10 @@ class _StringRowState extends ConsumerState<StringRow>
               ),
               // Always reserve the check-result space so the layout below
               // (tuning wheels) never shifts when check mode toggles.
-              // 28px = ~13px text line metrics + 3px gap + 12px bar.
+              // 29px = ~14px text line metrics + 3px gap + 12px bar.
               const SizedBox(height: 2),
               SizedBox(
-                height: 28,
+                height: 29,
                 child: AnimatedOpacity(
                   opacity: checkResult != null ? 1.0 : 0.0,
                   duration: const Duration(milliseconds: 250),

@@ -131,6 +131,8 @@ class TunerNotifier extends Notifier<TunerState> {
     final freq = NoteConstants.referenceFrequencies[noteName]!;
     if (state.referenceNote.isPlaying) {
       _audio.updateFrequency(-1, freq);
+    } else {
+      _audio.pluckTone(-1, freq);
     }
     state = state.copyWith(
       referenceNote: state.referenceNote.copyWith(
